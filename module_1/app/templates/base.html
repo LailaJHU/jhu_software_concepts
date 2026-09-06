@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Laila Afmeged{% endblock %} - Personal Site</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Navigation bar: colorized (forest green), links sit in the top-right
+         corner of every page, and the current page's link gets the
+         "active" class so it renders highlighted. -->
+    <nav class="navbar">
+        <span class="navbar-brand">Laila Afmeged</span>
+        <ul class="nav-links">
+            <li>
+                <a href="{{ url_for('home.index') }}"
+                   class="{{ 'active' if active_page == 'home' else '' }}">Home</a>
+            </li>
+            <li>
+                <a href="{{ url_for('projects.index') }}"
+                   class="{{ 'active' if active_page == 'projects' else '' }}">Projects</a>
+            </li>
+            <li>
+                <a href="{{ url_for('contact.index') }}"
+                   class="{{ 'active' if active_page == 'contact' else '' }}">Contact</a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Laila Afmeged &mdash; JHU Software Concepts, Module 1</p>
+    </footer>
+
+</body>
+</html>

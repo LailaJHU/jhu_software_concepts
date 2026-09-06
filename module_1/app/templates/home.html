@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="home-section">
+
+    <!-- Bio column: name, position, bio text. Sits on the LEFT per spec. -->
+    <div class="bio-column">
+        <h1>{{ name }}</h1>
+        <h2 class="position">{{ position }}</h2>
+        <p class="bio-text">{{ bio }}</p>
+    </div>
+
+    <!-- Photo column: sits on the RIGHT per spec. -->
+    <div class="photo-column">
+        <img src="{{ url_for('static', filename='img/' + photo_filename) }}"
+             alt="Photo of {{ name }}" class="profile-photo">
+    </div>
+
+</section>
+{% endblock %}
