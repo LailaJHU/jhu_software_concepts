@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grad Cafe Admissions Analysis</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="page-header">
+    <div class="header-row">
+      <h1>Grad Cafe Admissions Analysis</h1>
+      <form action="{{ url_for('update_analysis') }}" method="post" class="inline-form">
+        <button type="submit" class="btn btn-secondary">Update Analysis</button>
+      </form>
+    </div>
+    <p class="subtitle">Live analysis of scraped, cleaned, and LLM-standardized
+       Grad Cafe admissions results, queried directly from PostgreSQL.</p>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% if pull_running %}
+    <div class="status-banner status-running">
+      New data is currently being retrieved from Grad Cafe and loaded into the
+      database. This page is showing the most recent completed analysis;
+      click Update Analysis again once the pull finishes.
+    </div>
+  {% endif %}
+
+  <main>
+    <section class="card">
+      <h2>Required Analysis</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <span class="stat-label">Fall 2026 applicant count</span>
+          <span class="stat-value">{{ "{:,}".format(results.q1_fall_2026_count) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Percent international</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q2_percent_international) }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Average GPA</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q3_avg_gpa) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Average GRE Quantitative</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q3_avg_gre_quant) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Average GRE Verbal</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q3_avg_gre_verbal) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Average GRE Analytical Writing</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q3_avg_gre_aw) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Avg GPA, American, Fall 2026</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q4_avg_gpa_american_fall_2026) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Fall 2025 acceptance rate</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q5_fall_2025_acceptance_pct) }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Avg GPA, accepted, Fall 2026</span>
+          <span class="stat-value">{{ "%.2f"|format(results.q6_avg_gpa_accepted_fall_2026) }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">JHU Masters CS entries</span>
+          <span class="stat-value">{{ results.q7_jhu_masters_cs_count }}</span>
+        </div>
+      </div>
+
+      <h3>Fall 2026 PhD Computer Science acceptances at Georgetown / MIT / Stanford / CMU</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Field source</th><th>Count</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Original downloaded fields (Q8)</td><td>{{ results.q8_original_field_count }}</td></tr>
+          <tr><td>LLM-generated fields (Q9)</td><td>{{ results.q9_llm_field_count }}</td></tr>
+          <tr>
+            <td>Difference (Q9 &minus; Q8)</td>
+            <td>{{ "+" if results.q9_minus_q8_diff >= 0 else "" }}{{ results.q9_minus_q8_diff }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">
+        The LLM-field count is lower because the local LLM standardization
+        pass only finished processing 60 of 30,060 cleaned records before the
+        Module 2 deadline (see README) &mdash; it is a coverage gap, not a
+        university/program matching disagreement.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Original Question 1: Does a higher GPA mean a higher acceptance rate?</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>GPA bucket</th><th>Entries</th><th>Percent accepted</th></tr>
+        </thead>
+        <tbody>
+          {% for bucket, total, pct in results.original_gpa_bucket %}
+          <tr>
+            <td>{{ bucket }}</td>
+            <td>{{ "{:,}".format(total) }}</td>
+            <td>{{ "%.2f"|format(pct) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="note">
+        Counterintuitively, applicants with a GPA at or above 3.8 were
+        accepted at a slightly lower rate than applicants below 3.8 &mdash;
+        most likely because higher-GPA applicants disproportionately apply to
+        more selective PhD programs, not because GPA hurts admission chances.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Original Question 2: Entries per degree type</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Degree</th><th>Entries</th></tr>
+        </thead>
+        <tbody>
+          {% for degree, total in results.original_degree_breakdown %}
+          <tr>
+            <td>{{ degree }}</td>
+            <td>{{ "{:,}".format(total) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card pull-data-card">
+      <h2>Refresh the dataset</h2>
+      <p>
+        <strong>Pull Data</strong> checks Grad Cafe for newly submitted
+        application results and adds new records to the database (existing
+        records are never duplicated or overwritten). Depending on how much
+        new data is available, this may take some time. Only one Pull Data
+        run can be active at a time.
+      </p>
+      <form action="{{ url_for('pull_data') }}" method="post" class="inline-form">
+        <button type="submit" class="btn btn-primary" {{ "disabled" if pull_running }}>
+          Pull Data
+        </button>
+      </form>
+      {% if pull_status.get("message") %}
+        <p class="status-line">Last status: {{ pull_status.get("message") }}</p>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer>
+    <p>Grad Cafe Admissions Analysis &mdash; JHU Software Concepts, Module 3</p>
+  </footer>
+</body>
+</html>
