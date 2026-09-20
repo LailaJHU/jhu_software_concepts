@@ -1,0 +1,5 @@
+# Read the Docs installs exactly this file to build the documentation.
+# It pulls in the project's real runtime requirements too, so autodoc can
+# actually import app.py / models.py / scrape.py / etc. and pull real
+# docstrings + signatures rather than falling back to mocked stubs.
+-r ../requirements.txt

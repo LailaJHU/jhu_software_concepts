@@ -1,0 +1,20 @@
+.env
+*.gguf
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+venv/
+.venv/
+pull_data.log
+pull_status.json
+.scrape_checkpoint.json
+applicant_data.json
+applicants_load.csv
+schema.sql
+
+# Module 4 additions
+.pytest_cache/
+.coverage
+htmlcov/
+docs/_build/

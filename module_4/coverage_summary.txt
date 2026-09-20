@@ -1,0 +1,17 @@
+............................................................             [100%]
+
+---------- coverage: platform darwin, python 3.12.7-final-0 ----------
+Name                        Stmts   Miss  Cover   Missing
+---------------------------------------------------------
+src/app.py                     68      0   100%
+src/load_data.py               73      0   100%
+src/models.py                  43      0   100%
+src/orm_queries.py             47      0   100%
+src/pull_data_pipeline.py      32      0   100%
+src/query_data.py              26      0   100%
+---------------------------------------------------------
+TOTAL                         289      0   100%
+Coverage HTML written to dir htmlcov
+
+Required test coverage of 100% reached. Total coverage: 100.00%
+60 passed in 1.05s
